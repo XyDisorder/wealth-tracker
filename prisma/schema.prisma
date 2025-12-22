@@ -1,0 +1,159 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Raw events from providers (webhooks)
+model RawEvent {
+  id        String   @id @default(uuid())
+  provider  String   // BANK, CRYPTO, INSURER
+  userId    String
+  payload   String // JSON payload
+  createdAt DateTime @default(now())
+
+  @@index([provider, userId])
+  @@index([createdAt])
+}
+
+// DB-backed job queue
+model Job {
+  id        String   @id @default(uuid())
+  type      String   // RECONCILE_RAW_EVENT, ENRICH_CRYPTO_VALUATION, REFRESH_FX_RATES
+  payload   String // JSON payload
+  status    String   @default("PENDING") // PENDING, RUNNING, DONE, FAILED
+  attempts  Int      @default(0)
+  lockedAt  DateTime?
+  lastError String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, lockedAt])
+  @@index([type, status])
+}
+
+// Normalized canonical events
+model NormalizedEvent {
+  id               String   @id @default(uuid())
+  userId           String
+  provider         String   // BANK, CRYPTO, INSURER
+  providerEventId   String
+  accountId        String
+  occurredAt       DateTime
+  ingestedAt       DateTime @default(now())
+  kind             String   // CASH_CREDIT, CASH_DEBIT, CRYPTO_DEPOSIT, etc.
+  description      String?
+  
+  // Fiat money fields
+  fiatCurrency     String?
+  fiatAmountMinor  String?  // bigint stored as string
+  
+  // Crypto fields
+  assetSymbol      String?
+  assetAmount      String?  // decimal string
+  valuationStatus String?  // PENDING, VALUED
+  
+  // Reconciliation fields
+  canonicalKey     String
+  status           String   @default("APPLIED") // APPLIED, SUPERSEDED, IGNORED
+  supersededById   String?
+  version          Int      @default(1)
+  hashMeaningful   String
+
+  @@unique([canonicalKey, version])
+  @@index([userId, occurredAt])
+  @@index([canonicalKey])
+  @@index([status])
+  @@index([userId, status])
+}
+
+// Head pointers for canonical events (latest version per canonicalKey)
+model EventHead {
+  canonicalKey  String   @id
+  userId        String
+  latestEventId String
+  latestVersion Int
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// Materialized view: Account balances per user
+model AccountView {
+  id                 String   @id @default(uuid())
+  userId             String
+  accountId          String
+  provider           String
+  balancesByCurrency String // JSON: { "EUR": "100000", "USD": "50000" }
+  cryptoPositions    String // JSON: { "BTC": "1.5", "ETH": "10.0" }
+  lastUpdatedAt      DateTime @updatedAt
+
+  @@unique([userId, accountId])
+  @@index([userId])
+  @@index([provider])
+}
+
+// Materialized view: User wealth summary
+model UserSummaryView {
+  userId                String   @id
+  balancesByCurrency    String // JSON: { "EUR": "100000", "USD": "50000" }
+  cryptoPositions       String // JSON: { "BTC": "1.5", "ETH": "10.0" }
+  valuationStatus      String   // FULL, PARTIAL
+  missingCryptoValuations Int    @default(0)
+  lastUpdatedAt        DateTime @updatedAt
+}
+
+// Materialized view: Timeline of events
+model TimelineView {
+  id              String   @id @default(uuid())
+  userId          String
+  eventId         String
+  occurredAt      DateTime
+  provider        String
+  accountId       String
+  kind            String
+  description     String?
+  fiatCurrency    String?
+  fiatAmountMinor String?
+  assetSymbol     String?
+  assetAmount     String?
+  status          String
+
+  @@index([userId, occurredAt])
+  @@index([userId, occurredAt, id])
+}
+
+// Asset prices for crypto valuation
+model AssetPrice {
+  id            String   @id @default(uuid())
+  assetSymbol   String   // BTC, ETH, etc.
+  fiatCurrency  String   // EUR, USD, etc.
+  priceMinor    String   // bigint stored as string (price in minor units)
+  asOf          DateTime
+  createdAt     DateTime @default(now())
+
+  @@unique([assetSymbol, fiatCurrency, asOf])
+  @@index([assetSymbol, fiatCurrency, asOf])
+  @@index([asOf])
+}
+
+// FX rates for currency conversion
+model FxRate {
+  id              String   @id @default(uuid())
+  baseCurrency    String   // EUR, USD, etc.
+  quoteCurrency   String   // EUR, USD, etc.
+  rateDecimalString String // decimal string (e.g., "1.0850")
+  asOf            DateTime
+  createdAt       DateTime @default(now())
+
+  @@unique([baseCurrency, quoteCurrency, asOf])
+  @@index([baseCurrency, quoteCurrency, asOf])
+  @@index([asOf])
+}
+
