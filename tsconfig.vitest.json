@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["vitest.config.mts", "src/**/*", "test/**/*"],
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "bundler"
+  }
+}
+
