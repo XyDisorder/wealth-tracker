@@ -1,0 +1,56 @@
+[
+  {
+    "userId": "user-001",
+    "bankId": "BNP",
+    "txnId": "txn-12345",
+    "date": "2025-12-08T12:00:00Z",
+    "type": "credit",
+    "amount": 2000,
+    "currency": "EUR",
+    "account": "acc-01",
+    "description": "Virement salaire"
+  },
+  {
+    "userId": "user-001",
+    "platform": "Coinbase",
+    "id": "tx-abc123",
+    "time": 1710001000000,
+    "type": "crypto_deposit",
+    "asset": "BTC",
+    "amount": 0.05,
+    "fiatValue": 1500,
+    "currency": "EUR",
+    "walletId": "acc-03"
+  },
+  {
+    "userId": "user-001",
+    "insurer": "AXA",
+    "transactionId": "av-2025-001",
+    "timestamp": 1710002000000,
+    "movementType": "premium",
+    "amount": 500,
+    "currency": "EUR",
+    "policyNumber": "acc-04"
+  },
+  {
+    "userId": "user-001",
+    "platform": "Coinbase",
+    "id": "tx-abc124",
+    "time": 1710001100000,
+    "type": "crypto_deposit",
+    "asset": "ETH",
+    "amount": 2.5,
+    "walletId": "acc-03"
+  },
+  {
+    "userId": "user-001",
+    "bankId": "BNP",
+    "txnId": "txn-12346",
+    "date": "2025-12-09T14:20:00Z",
+    "type": "debit",
+    "amount": 250.75,
+    "currency": "EUR",
+    "account": "acc-01",
+    "description": "Purchase"
+  }
+]

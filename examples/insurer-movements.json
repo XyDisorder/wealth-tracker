@@ -1,0 +1,87 @@
+[
+  {
+    "description": "Insurance premium payment",
+    "payload": {
+      "userId": "user-001",
+      "insurer": "AXA",
+      "transactionId": "av-premium-001",
+      "timestamp": 1710002000000,
+      "movementType": "premium",
+      "amount": 500,
+      "currency": "EUR",
+      "policyNumber": "acc-04",
+      "description": "Monthly insurance premium"
+    }
+  },
+  {
+    "description": "Insurance claim payout",
+    "payload": {
+      "userId": "user-001",
+      "insurer": "AXA",
+      "transactionId": "av-claim-001",
+      "timestamp": 1710003000000,
+      "movementType": "claim",
+      "amount": 2000,
+      "currency": "EUR",
+      "policyNumber": "acc-04",
+      "description": "Claim payout for accident"
+    }
+  },
+  {
+    "description": "Insurance refund",
+    "payload": {
+      "userId": "user-001",
+      "insurer": "AXA",
+      "transactionId": "av-refund-001",
+      "timestamp": 1710004000000,
+      "movementType": "refund",
+      "amount": 150,
+      "currency": "EUR",
+      "policyNumber": "acc-04",
+      "description": "Premium refund for policy cancellation"
+    }
+  },
+  {
+    "description": "Insurance commission",
+    "payload": {
+      "userId": "user-001",
+      "insurer": "AXA",
+      "transactionId": "av-commission-001",
+      "timestamp": 1710005000000,
+      "movementType": "commission",
+      "amount": 50,
+      "currency": "EUR",
+      "policyNumber": "acc-04",
+      "description": "Agent commission"
+    }
+  },
+  {
+    "description": "Insurance fee",
+    "payload": {
+      "userId": "user-001",
+      "insurer": "AXA",
+      "transactionId": "av-fee-001",
+      "timestamp": 1710006000000,
+      "movementType": "fee",
+      "amount": 25,
+      "currency": "EUR",
+      "policyNumber": "acc-04",
+      "description": "Administrative fee"
+    }
+  },
+  {
+    "description": "Insurance adjustment",
+    "payload": {
+      "userId": "user-001",
+      "insurer": "AXA",
+      "transactionId": "av-adjustment-001",
+      "timestamp": 1710007000000,
+      "movementType": "adjustment",
+      "amount": -100,
+      "currency": "EUR",
+      "policyNumber": "acc-04",
+      "description": "Premium adjustment"
+    }
+  }
+]
+

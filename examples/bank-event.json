@@ -1,0 +1,11 @@
+{
+  "userId": "user-123",
+  "transactionId": "txn-bank-001",
+  "accountId": "acc-bnp-456",
+  "date": "2024-01-15T10:30:00Z",
+  "amount": 1500.50,
+  "currency": "EUR",
+  "type": "CREDIT",
+  "description": "Salary payment"
+}
+

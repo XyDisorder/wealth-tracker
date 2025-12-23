@@ -1,0 +1,15 @@
+{
+  "userId": "user-123",
+  "id": "txn-crypto-001",
+  "walletId": "wallet-coinbase-789",
+  "timestamp": 1705312200000,
+  "asset": "BTC",
+  "amount": "0.5",
+  "type": "DEPOSIT",
+  "fiatValue": {
+    "amount": 20000.00,
+    "currency": "USD"
+  },
+  "description": "Bitcoin deposit"
+}
+

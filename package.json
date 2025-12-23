@@ -26,7 +26,14 @@
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
     "worker": "ts-node src/worker/main.ts",
-    "seed:events": "ts-node src/scripts/seed-events.ts"
+    "test:webhooks": "node scripts/test-webhooks.js",
+    "debug:jobs": "node scripts/debug-jobs.js",
+    "reset:jobs": "node scripts/reset-failed-jobs.js",
+    "seed:events": "node scripts/test-webhooks.js",
+    "frontend:build": "cd frontend && tsc",
+    "frontend:watch": "cd frontend && tsc --watch",
+    "frontend": "pnpm frontend:build && node frontend/server.js",
+    "dev:frontend": "pnpm frontend:watch & node frontend/server.js"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

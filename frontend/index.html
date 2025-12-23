@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wealth Tracker - Dashboard</title>
+    <link rel="stylesheet" href="src/styles.css" />
+    <!-- Note: Scripts are loaded from dist/ after TypeScript compilation -->
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>💰 Wealth Tracker</h1>
+        <div class="header-actions">
+          <input
+            type="text"
+            id="userIdInput"
+            placeholder="User ID (ex: user-001)"
+            value="user-001"
+          />
+          <button onclick="loadData()">Charger les données</button>
+          <button onclick="showWebhookForm()">Envoyer un webhook</button>
+        </div>
+      </header>
+
+      <main>
+        <!-- Summary Section -->
+        <section id="summarySection" class="card">
+          <h2>📊 Résumé de Wealth</h2>
+          <div id="summaryContent" class="loading">Chargement...</div>
+        </section>
+
+        <!-- Accounts Section -->
+        <section id="accountsSection" class="card">
+          <h2>🏦 Comptes</h2>
+          <div id="accountsContent" class="loading">Chargement...</div>
+        </section>
+
+        <!-- Timeline Section -->
+        <section id="timelineSection" class="card">
+          <h2>📅 Timeline</h2>
+          <div id="timelineContent" class="loading">Chargement...</div>
+        </section>
+      </main>
+
+      <!-- Webhook Form Modal -->
+      <div id="webhookModal" class="modal">
+        <div class="modal-content">
+          <span class="close" onclick="closeWebhookForm()">&times;</span>
+          <h2>Envoyer un Webhook</h2>
+          <form id="webhookForm">
+            <label>
+              Provider:
+              <select id="providerSelect" onchange="updateWebhookForm()">
+                <option value="BANK">Bank</option>
+                <option value="CRYPTO">Crypto</option>
+                <option value="INSURER">Insurer</option>
+              </select>
+            </label>
+
+            <div id="webhookFields"></div>
+
+            <button type="submit">Envoyer</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="dist/api.js"></script>
+    <script src="dist/ui.js"></script>
+    <script src="dist/webhook-forms.js"></script>
+    <script src="dist/app.js"></script>
+  </body>
+</html>
+

@@ -1,0 +1,10 @@
+{
+  "userId": "user-123",
+  "policyNumber": "pol-axa-001",
+  "accountId": "acc-insurance-321",
+  "occurredAt": "2024-01-20T08:00:00Z",
+  "premiumAmount": 120.00,
+  "currency": "EUR",
+  "description": "Monthly insurance premium"
+}
+
