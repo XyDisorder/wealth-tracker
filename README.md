@@ -219,23 +219,55 @@ src/
 
 ## 🔧 Available Scripts
 
+### Development
+
 ```bash
-# Development
 pnpm start:dev          # Server in watch mode
-pnpm worker             # Standalone worker
+pnpm start:prod         # Production mode
+pnpm worker             # Standalone worker (must run separately)
+```
 
-# Tests
-pnpm test               # Unit tests
-pnpm test:webhooks      # Webhook test script
+### Testing
 
-# Database
+```bash
+pnpm test               # Run unit tests
+pnpm test:watch         # Run tests in watch mode
+pnpm test:ui             # Run tests with UI
+pnpm test:cov            # Run tests with coverage
+pnpm test:webhooks       # Send test webhook events
+```
+
+### Database
+
+```bash
 pnpm db:generate        # Generate Prisma Client
 pnpm db:migrate         # Apply migrations
-pnpm db:studio          # Open Prisma Studio
+pnpm db:push            # Push schema changes (dev only)
+pnpm db:studio          # Open Prisma Studio (http://localhost:5555)
+```
 
-# Frontend
-pnpm frontend           # Build and serve frontend
-pnpm frontend:build     # Build TypeScript frontend
+### Job Management & Debugging
+
+```bash
+# Debug jobs: view failed, stuck, or pending jobs
+pnpm debug:jobs
+
+# Reset failed jobs: mark failed jobs as PENDING to retry
+pnpm reset:jobs
+```
+
+These scripts are useful when:
+- Jobs are stuck in `RUNNING` state (worker crashed)
+- Jobs failed and need to be retried
+- You want to inspect job status and errors
+
+### Frontend
+
+```bash
+pnpm frontend            # Build and serve frontend
+pnpm frontend:build      # Build TypeScript frontend only
+pnpm frontend:watch      # Watch mode for frontend TypeScript
+pnpm dev:frontend        # Watch mode + serve (development)
 ```
 
 ## 📝 Event Formats
@@ -301,6 +333,3 @@ The system automatically handles:
 
 The canonical key is: `${provider}:${userId}:${providerEventId}:${accountId}`
 
-## 📄 License
-
-UNLICENSED
