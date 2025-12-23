@@ -12,9 +12,46 @@ export const cryptoWebhookSchema = z.object({
   time: z
     .number()
     .or(z.string())
+    .optional()
     .transform((val) => {
+      // If no timestamp provided, use current time
+      if (val === undefined || val === null) {
+        return new Date();
+      }
+      
       if (typeof val === 'number') {
-        return new Date(val);
+        // If timestamp is less than 1e12, assume it's in seconds and convert to milliseconds
+        let timestamp = val < 1e12 ? val * 1000 : val;
+        let date = new Date(timestamp);
+        
+        // If the resulting date is before 2000, it's likely invalid
+        // Try treating it as milliseconds if we converted from seconds
+        if (date.getFullYear() < 2000 && val < 1e12) {
+          // It was already small, try as milliseconds directly
+          date = new Date(val);
+          // If still invalid, keep the converted version
+          if (date.getFullYear() >= 2000) {
+            return date;
+          }
+        }
+        
+        return date;
+      }
+      // Try to parse as number first (could be string representation of number)
+      const numVal = Number(val);
+      if (!isNaN(numVal) && val !== '') {
+        let timestamp = numVal < 1e12 ? numVal * 1000 : numVal;
+        let date = new Date(timestamp);
+        
+        // If the resulting date is before 2000, it's likely invalid
+        if (date.getFullYear() < 2000 && numVal < 1e12) {
+          date = new Date(numVal);
+          if (date.getFullYear() >= 2000) {
+            return date;
+          }
+        }
+        
+        return date;
       }
       return new Date(val);
     }),

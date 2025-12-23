@@ -41,6 +41,26 @@ pnpm start:prod
 
 The server starts on `http://localhost:3000`.
 
+### 📚 API Documentation (Swagger/OpenAPI)
+
+Once the server is running, visit **`http://localhost:3000/api`** for interactive Swagger documentation.
+
+The Swagger UI provides:
+- **Interactive API Explorer**: Test endpoints directly from the browser
+- **Request/Response Examples**: See example payloads for each endpoint
+- **Schema Documentation**: View detailed DTOs and data models
+- **Try It Out**: Execute API calls and see responses in real-time
+
+**Available Endpoints:**
+- `POST /webhooks` - Unified webhook endpoint (auto-detects provider)
+- `POST /webhooks/bank` - Bank provider webhook
+- `POST /webhooks/crypto` - Crypto provider webhook
+- `POST /webhooks/insurer` - Insurer provider webhook
+- `GET /users/:userId/wealth/summary` - Wealth summary
+- `GET /users/:userId/wealth/accounts` - Account views
+- `GET /users/:userId/wealth/timeline` - Timeline events
+- `GET /health` - Health check
+
 ### 2. Start the Worker (in a separate terminal)
 
 The worker processes events asynchronously:
@@ -216,6 +236,14 @@ src/
 ### Health
 
 - `GET /health` - Health check
+
+### API Documentation
+
+- `GET /api` - **Swagger/OpenAPI documentation** (interactive API explorer)
+  - Browse all endpoints
+  - See request/response schemas
+  - Test endpoints directly from the browser
+  - View examples for each provider (Bank, Crypto, Insurer)
 
 ## 🔧 Available Scripts
 

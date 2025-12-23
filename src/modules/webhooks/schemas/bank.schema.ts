@@ -12,7 +12,13 @@ export const bankWebhookSchema = z.object({
   date: z
     .string()
     .or(z.date())
+    .optional()
     .transform((val) => {
+      // If no date provided, use current time
+      if (val === undefined || val === null) {
+        return new Date();
+      }
+      
       if (typeof val === 'string') {
         return new Date(val);
       }
