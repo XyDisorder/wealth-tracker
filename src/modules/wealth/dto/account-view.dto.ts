@@ -40,4 +40,3 @@ export class AccountViewDto {
   })
   lastUpdatedAt: Date;
 }
-

@@ -1,4 +1,5 @@
 import { EventKind } from '../../../common/constants/data.constants';
+import { CURRENCY_CONSTANTS } from '../../../common/constants/numeric.constants';
 import { bankWebhookSchema } from '../schemas/bank.schema';
 
 /**
@@ -27,13 +28,18 @@ export class BankAdapter {
         ? EventKind.CASH_CREDIT
         : EventKind.CASH_DEBIT;
 
-    // Convert amount to minor units (assuming 2 decimal places for fiat)
+    // Convert amount to minor units
     const fiatAmountMinor = validated.amount
-      ? BigInt(Math.round(validated.amount * 100))
+      ? BigInt(
+          Math.round(
+            validated.amount * CURRENCY_CONSTANTS.MINOR_UNITS_MULTIPLIER,
+          ),
+        )
       : null;
 
-    // Default currency to EUR if missing
-    const fiatCurrency = validated.currency || 'EUR';
+    // Default currency if missing
+    const fiatCurrency =
+      validated.currency || CURRENCY_CONSTANTS.DEFAULT_CURRENCY;
 
     return {
       userId: validated.userId,

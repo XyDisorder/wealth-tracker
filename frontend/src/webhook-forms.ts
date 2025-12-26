@@ -2,7 +2,11 @@
  * Webhook form generation and handling
  */
 
-import type { WebhookPayload } from './types';
+// Type definitions (inlined for module: "None" compatibility)
+// Note: WebhookPayload is defined in api.ts, using same structure here
+type WebhookFormPayload = {
+  userId: string;
+} & Record<string, string | number | undefined>;
 
 type Provider = 'BANK' | 'CRYPTO' | 'INSURER';
 
@@ -30,7 +34,7 @@ const WEBHOOK_TEMPLATES: Record<Provider, WebhookTemplate> = {
     userId: 'user-001',
     bankId: 'BNP',
     txnId: 'txn-' + Date.now(),
-    date: new Date().toISOString(),
+    // date field removed - backend will use Date.now() automatically
     type: 'credit',
     amount: 1000,
     currency: 'EUR',
@@ -41,7 +45,7 @@ const WEBHOOK_TEMPLATES: Record<Provider, WebhookTemplate> = {
     userId: 'user-001',
     platform: 'Coinbase',
     id: 'tx-' + Date.now(),
-    time: Date.now(),
+    // time field removed - backend will use Date.now() automatically
     type: 'crypto_deposit',
     asset: 'BTC',
     amount: 0.01,
@@ -53,7 +57,7 @@ const WEBHOOK_TEMPLATES: Record<Provider, WebhookTemplate> = {
     userId: 'user-001',
     insurer: 'AXA',
     transactionId: 'av-' + Date.now(),
-    timestamp: Date.now(),
+    // timestamp field removed - backend will use Date.now() automatically
     movementType: 'premium',
     amount: 100,
     currency: 'EUR',
@@ -81,11 +85,13 @@ function updateWebhookForm(): void {
       continue;
     }
 
-    const inputType = key === 'date' || key === 'timestamp' || key === 'time' ? 'datetime-local' : typeof value === 'number' ? 'number' : 'text';
-    let inputValue: string | number = value as string | number;
-    if (key === 'date' && typeof value === 'string') {
-      inputValue = new Date(value).toISOString().slice(0, 16);
+    // Skip date/timestamp/time fields - backend will use Date.now() automatically
+    if (key === 'date' || key === 'timestamp' || key === 'time') {
+      continue; // Don't show these fields in the form
     }
+
+    const inputType = typeof value === 'number' ? 'number' : 'text';
+    const inputValue: string | number = value as string | number;
 
     html += `<label>${key}:<input type="${inputType}" name="${key}" value="${inputValue}" required /></label>`;
   }
@@ -113,31 +119,41 @@ async function handleWebhookSubmit(event: Event): Promise<void> {
 
   const form = event.target as HTMLFormElement;
   const formData = new FormData(form);
-  const payload: WebhookPayload = { userId: '' };
+  const payload: WebhookFormPayload = { userId: '' };
 
   formData.forEach((value, key) => {
     const stringValue = value as string;
-    if (key === 'amount' || key === 'fiatValue' || key === 'time' || key === 'timestamp') {
+    
+    // Skip date/timestamp/time fields - backend will use Date.now() automatically
+    if (key === 'date' || key === 'time' || key === 'timestamp') {
+      return; // Don't include these fields in payload
+    }
+    
+    if (key === 'amount' || key === 'fiatValue') {
       payload[key] = parseFloat(stringValue) || parseInt(stringValue, 10);
     } else {
       payload[key] = stringValue;
     }
   });
 
-  if (payload.date && typeof payload.date === 'string') {
-    payload.date = new Date(payload.date).toISOString();
-  }
-
   const apiService = window.apiService;
   const loadData = window.loadData;
 
   try {
     const result = await apiService.sendWebhook(payload);
-    alert(`Webhook envoyé avec succès!\nRawEvent ID: ${result.rawEventId}\nJob ID: ${result.jobId}`);
+    window.showToast({
+      message: `Webhook envoyé avec succès! RawEvent: ${result.rawEventId.substring(0, 8)}...`,
+      type: 'success',
+      duration: 4000,
+    });
     closeWebhookForm();
     setTimeout(() => loadData(), 2000);
   } catch (error) {
-    alert(`Erreur: ${error instanceof Error ? error.message : String(error)}`);
+    window.showToast({
+      message: `Erreur: ${error instanceof Error ? error.message : String(error)}`,
+      type: 'error',
+      duration: 5000,
+    });
   }
 }
 

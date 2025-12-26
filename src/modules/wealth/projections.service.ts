@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../db/prisma/prisma.service';
 import { EventStatus } from '../../common/constants/data.constants';
 import { v4 as uuidv4 } from 'uuid';
+import { safeJsonStringify } from '../../common/utils';
 
 /**
  * Service for computing materialized views (projections)
@@ -20,14 +21,18 @@ export class ProjectionsService {
   async recomputeUserProjections(userId: string): Promise<void> {
     this.logger.log(`Recomputing projections for user ${userId}`);
 
-    // Get all APPLIED event heads for this user
+    // Optimized: Get all APPLIED events in a single query using event heads
+    // This avoids N+1 queries by fetching events directly via event heads
     const eventHeads = await this.prisma.eventHead.findMany({
       where: {
         userId,
       },
+      select: {
+        latestEventId: true,
+      },
     });
 
-    // Get all latest events (APPLIED only)
+    // Get all latest events (APPLIED only) in a single query
     const eventIds = eventHeads.map((head) => head.latestEventId);
     const events =
       eventIds.length > 0
@@ -35,6 +40,25 @@ export class ProjectionsService {
             where: {
               id: { in: eventIds },
               status: EventStatus.APPLIED,
+            },
+            // Select only necessary fields for projections
+            select: {
+              id: true,
+              occurredAt: true,
+              provider: true,
+              accountId: true,
+              kind: true,
+              description: true,
+              fiatCurrency: true,
+              fiatAmountMinor: true,
+              assetSymbol: true,
+              assetAmount: true,
+              valuationStatus: true,
+              status: true,
+            },
+            // Order by occurredAt desc to ensure most recent first
+            orderBy: {
+              occurredAt: 'desc',
             },
           })
         : [];
@@ -108,14 +132,14 @@ export class ProjectionsService {
       },
       create: {
         userId,
-        balancesByCurrency: JSON.stringify(balancesByCurrencyString),
-        cryptoPositions: JSON.stringify(cryptoPositions),
+        balancesByCurrency: safeJsonStringify(balancesByCurrencyString),
+        cryptoPositions: safeJsonStringify(cryptoPositions),
         valuationStatus,
         missingCryptoValuations,
       },
       update: {
-        balancesByCurrency: JSON.stringify(balancesByCurrencyString),
-        cryptoPositions: JSON.stringify(cryptoPositions),
+        balancesByCurrency: safeJsonStringify(balancesByCurrencyString),
+        cryptoPositions: safeJsonStringify(cryptoPositions),
         valuationStatus,
         missingCryptoValuations,
       },
@@ -207,8 +231,8 @@ export class ProjectionsService {
             id: existing.id,
           },
           data: {
-            balancesByCurrency: JSON.stringify(balancesByCurrencyString),
-            cryptoPositions: JSON.stringify(cryptoPositions),
+            balancesByCurrency: safeJsonStringify(balancesByCurrencyString),
+            cryptoPositions: safeJsonStringify(cryptoPositions),
           },
         });
       } else {
@@ -218,8 +242,8 @@ export class ProjectionsService {
             userId,
             accountId,
             provider,
-            balancesByCurrency: JSON.stringify(balancesByCurrencyString),
-            cryptoPositions: JSON.stringify(cryptoPositions),
+            balancesByCurrency: safeJsonStringify(balancesByCurrencyString),
+            cryptoPositions: safeJsonStringify(cryptoPositions),
           },
         });
       }
@@ -257,10 +281,9 @@ export class ProjectionsService {
       return;
     }
 
-    // Sort events by occurredAt (descending)
-    const sortedEvents = [...events].sort(
-      (a, b) => b.occurredAt.getTime() - a.occurredAt.getTime(),
-    );
+    // Events are already sorted by occurredAt desc from the query
+    // No need to sort again in memory
+    const sortedEvents = events;
 
     // Create timeline entries
     const timelineEntries = sortedEvents.map((event) => ({

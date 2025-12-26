@@ -2,7 +2,44 @@
  * UI rendering functions
  */
 
-import type { WealthSummary, AccountView, TimelineResponse } from './types';
+// Type definitions (inlined for module: "None" compatibility)
+interface WealthSummary {
+  userId: string;
+  balancesByCurrency: Record<string, string>;
+  cryptoPositions: Record<string, string>;
+  valuation: {
+    status: 'FULL' | 'PARTIAL';
+    missingCryptoValuations: number;
+  };
+  lastUpdatedAt: string;
+}
+
+interface AccountView {
+  accountId: string;
+  provider: string;
+  balancesByCurrency: Record<string, string>;
+  cryptoPositions: Record<string, string>;
+  lastUpdatedAt: string;
+}
+
+interface TimelineEvent {
+  eventId: string;
+  occurredAt: string;
+  provider: string;
+  accountId: string;
+  kind: string;
+  description: string | null;
+  fiatCurrency: string | null;
+  fiatAmountMinor: string | null;
+  assetSymbol: string | null;
+  assetAmount: string | null;
+  status: string;
+}
+
+interface TimelineResponse {
+  events: TimelineEvent[];
+  nextCursor?: string;
+}
 
 function formatAmount(amountMinor: string | null, currency: string = 'EUR'): string {
   if (!amountMinor) return '0.00';

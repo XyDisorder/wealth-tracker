@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "ES2020",
+    "module": "None",
     "noEmit": false,
     "lib": ["ES2020", "DOM"],
     "moduleResolution": "node",
@@ -9,7 +9,7 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
+    "resolveJsonModule": false,
     "outDir": "./dist",
     "rootDir": "./src",
     "declaration": false,

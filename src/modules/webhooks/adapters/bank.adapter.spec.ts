@@ -178,7 +178,9 @@ describe('BankAdapter', () => {
 
       const result = BankAdapter.validateAndNormalize(payload);
 
-      expect(result.description).toBe('Virement avec caractères spéciaux: éàù€$');
+      expect(result.description).toBe(
+        'Virement avec caractères spéciaux: éàù€$',
+      );
     });
 
     it('should handle invalid date format (creates Invalid Date)', () => {
@@ -198,6 +200,56 @@ describe('BankAdapter', () => {
       expect(result.occurredAt).toBeInstanceOf(Date);
       expect(isNaN(result.occurredAt.getTime())).toBe(true); // Invalid Date
     });
+
+    it('should handle numeric timestamp in seconds', () => {
+      const payload = {
+        userId: 'user-001',
+        bankId: 'BNP',
+        txnId: 'txn-12345',
+        date: 1704110400, // 2024-01-01T12:00:00Z in seconds
+        type: 'credit',
+        amount: 1000,
+        currency: 'EUR',
+        account: 'acc-01',
+      };
+
+      const result = BankAdapter.validateAndNormalize(payload);
+      expect(result.occurredAt).toBeInstanceOf(Date);
+      expect(result.occurredAt.toISOString()).toBe('2024-01-01T12:00:00.000Z');
+    });
+
+    it('should handle numeric timestamp in milliseconds', () => {
+      const payload = {
+        userId: 'user-001',
+        bankId: 'BNP',
+        txnId: 'txn-12345',
+        date: 1704110400000, // 2024-01-01T12:00:00Z in milliseconds
+        type: 'credit',
+        amount: 1000,
+        currency: 'EUR',
+        account: 'acc-01',
+      };
+
+      const result = BankAdapter.validateAndNormalize(payload);
+      expect(result.occurredAt).toBeInstanceOf(Date);
+      expect(result.occurredAt.toISOString()).toBe('2024-01-01T12:00:00.000Z');
+    });
+
+    it('should handle string timestamp in seconds', () => {
+      const payload = {
+        userId: 'user-001',
+        bankId: 'BNP',
+        txnId: 'txn-12345',
+        date: '1704110400', // String representation of seconds
+        type: 'credit',
+        amount: 1000,
+        currency: 'EUR',
+        account: 'acc-01',
+      };
+
+      const result = BankAdapter.validateAndNormalize(payload);
+      expect(result.occurredAt).toBeInstanceOf(Date);
+      expect(result.occurredAt.toISOString()).toBe('2024-01-01T12:00:00.000Z');
+    });
   });
 });
-

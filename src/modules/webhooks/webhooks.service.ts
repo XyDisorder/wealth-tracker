@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../db/prisma/prisma.service';
 import { Provider, JobType } from '../../common/constants/data.constants';
+import { MAX_PAYLOAD_SIZE } from '../../common/constants/numeric.constants';
 import { v4 as uuidv4 } from 'uuid';
+import { safeJsonStringify } from '../../common/utils';
 
 /**
  * Service for handling webhook ingestion
@@ -22,8 +24,15 @@ export class WebhooksService {
     userId: string,
     payload: unknown,
   ): Promise<{ rawEventId: string; jobId: string }> {
+    // Validate payload size before processing
+    const payloadString = safeJsonStringify(payload);
+    if (payloadString.length > MAX_PAYLOAD_SIZE) {
+      throw new Error(
+        `Payload size (${payloadString.length} bytes) exceeds maximum allowed size (${MAX_PAYLOAD_SIZE} bytes)`,
+      );
+    }
+
     // Check for duplicate raw event (idempotency)
-    const payloadString = JSON.stringify(payload);
     const existingRawEvent = await this.prisma.rawEvent.findFirst({
       where: {
         provider,
@@ -43,7 +52,7 @@ export class WebhooksService {
       const existingJob = await this.prisma.job.findFirst({
         where: {
           type: JobType.RECONCILE_RAW_EVENT,
-          payload: JSON.stringify({ rawEventId: existingRawEvent.id }),
+          payload: safeJsonStringify({ rawEventId: existingRawEvent.id }),
         },
       });
       return {
@@ -67,7 +76,7 @@ export class WebhooksService {
       data: {
         id: uuidv4(),
         type: JobType.RECONCILE_RAW_EVENT,
-        payload: JSON.stringify({ rawEventId: rawEvent.id }),
+        payload: safeJsonStringify({ rawEventId: rawEvent.id }),
         status: 'PENDING',
       },
     });

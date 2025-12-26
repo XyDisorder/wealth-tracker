@@ -2,7 +2,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../db/prisma/prisma.service';
 import { NotFoundError } from '../../common/errors';
 import { WealthSummary, AccountView, TimelineEvent } from '../../common/types';
-import { Provider, EventKind, EventStatus } from '../../common/constants/data.constants';
+import {
+  Provider,
+  EventKind,
+  EventStatus,
+} from '../../common/constants/data.constants';
+import { safeJsonParse } from '../../common/utils';
 
 /**
  * Service for querying wealth data
@@ -39,10 +44,32 @@ export class WealthService {
       };
     }
 
+    // Parse JSON fields with error handling
+    let balancesByCurrency: Record<string, string> = {};
+    let cryptoPositions: Record<string, string> = {};
+
+    try {
+      balancesByCurrency = safeJsonParse(summary.balancesByCurrency) || {};
+    } catch (error) {
+      this.logger.warn(
+        `Invalid balancesByCurrency JSON for user ${userId}, using empty object`,
+        error,
+      );
+    }
+
+    try {
+      cryptoPositions = safeJsonParse(summary.cryptoPositions) || {};
+    } catch (error) {
+      this.logger.warn(
+        `Invalid cryptoPositions JSON for user ${userId}, using empty object`,
+        error,
+      );
+    }
+
     return {
       userId: summary.userId,
-      balancesByCurrency: JSON.parse(summary.balancesByCurrency),
-      cryptoPositions: JSON.parse(summary.cryptoPositions),
+      balancesByCurrency,
+      cryptoPositions,
       valuation: {
         status: summary.valuationStatus as 'FULL' | 'PARTIAL',
         missingCryptoValuations: summary.missingCryptoValuations,
@@ -64,13 +91,36 @@ export class WealthService {
       },
     });
 
-    return accounts.map((account) => ({
-      accountId: account.accountId,
-      provider: account.provider as Provider,
-      balancesByCurrency: JSON.parse(account.balancesByCurrency),
-      cryptoPositions: JSON.parse(account.cryptoPositions),
-      lastUpdatedAt: account.lastUpdatedAt,
-    }));
+    return accounts.map((account) => {
+      let balancesByCurrency: Record<string, string> = {};
+      let cryptoPositions: Record<string, string> = {};
+
+      try {
+        balancesByCurrency = safeJsonParse(account.balancesByCurrency) || {};
+      } catch (error) {
+        this.logger.warn(
+          `Invalid balancesByCurrency JSON for account ${account.accountId}, using empty object`,
+          error,
+        );
+      }
+
+      try {
+        cryptoPositions = safeJsonParse(account.cryptoPositions) || {};
+      } catch (error) {
+        this.logger.warn(
+          `Invalid cryptoPositions JSON for account ${account.accountId}, using empty object`,
+          error,
+        );
+      }
+
+      return {
+        accountId: account.accountId,
+        provider: account.provider as Provider,
+        balancesByCurrency,
+        cryptoPositions,
+        lastUpdatedAt: account.lastUpdatedAt,
+      };
+    });
   }
 
   /**

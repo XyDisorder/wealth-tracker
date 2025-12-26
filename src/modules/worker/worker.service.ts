@@ -9,6 +9,7 @@ import { JobType, JobStatus } from '../../common/constants/data.constants';
 import { appConfig } from '../../config/app.config';
 import { ReconcileRawEventHandler } from './handlers/reconcile-raw-event.handler';
 import { EnrichCryptoValuationHandler } from './handlers/enrich-crypto-valuation.handler';
+import { safeJsonParse } from '../../common/utils';
 
 /**
  * Worker service for processing background jobs
@@ -30,7 +31,7 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
   /**
    * Starts the worker on module init
    */
-  async onModuleInit() {
+  onModuleInit() {
     if (!this.config.worker.enabled) {
       this.logger.log('Worker is disabled in configuration');
       return;
@@ -43,7 +44,7 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
   /**
    * Stops the worker on module destroy
    */
-  async onModuleDestroy() {
+  onModuleDestroy() {
     this.stopPolling();
   }
 
@@ -155,18 +156,39 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
     payload: string;
     attempts: number;
   }): Promise<void> {
-    const payload = JSON.parse(job.payload);
+    let payload: {
+      rawEventId?: string;
+      normalizedEventId?: string;
+    };
 
     try {
-      switch (job.type) {
-        case JobType.RECONCILE_RAW_EVENT:
-          await this.reconcileRawEventHandler.handle(payload);
-          break;
-        case JobType.ENRICH_CRYPTO_VALUATION:
-          await this.enrichCryptoValuationHandler.handle(payload);
-          break;
-        default:
-          throw new Error(`Unknown job type: ${job.type}`);
+      payload = safeJsonParse<{
+        rawEventId?: string;
+        normalizedEventId?: string;
+      }>(job.payload);
+    } catch (error) {
+      throw new Error(
+        `Failed to parse job payload: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+
+    try {
+      if (job.type === (JobType.RECONCILE_RAW_EVENT as string)) {
+        if (!payload?.rawEventId) {
+          throw new Error('Missing rawEventId in payload');
+        }
+        await this.reconcileRawEventHandler.handle({
+          rawEventId: payload.rawEventId,
+        });
+      } else if (job.type === (JobType.ENRICH_CRYPTO_VALUATION as string)) {
+        if (!payload?.normalizedEventId) {
+          throw new Error('Missing normalizedEventId in payload');
+        }
+        await this.enrichCryptoValuationHandler.handle({
+          normalizedEventId: payload.normalizedEventId,
+        });
+      } else {
+        throw new Error(`Unknown job type: ${job.type}`);
       }
 
       // Mark job as done

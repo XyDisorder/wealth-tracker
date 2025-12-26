@@ -15,10 +15,17 @@ import {
 } from './types/reconciliation.types';
 import { ProjectionsService } from '../wealth/projections.service';
 import { v4 as uuidv4 } from 'uuid';
+import { safeJsonStringify } from '../../common/utils';
 
 /**
  * Service for event reconciliation
  * Handles deduplication, corrections, and late arrivals
+ *
+ * Note: Uses forwardRef to resolve circular dependency with ProjectionsService.
+ * This is necessary because:
+ * - ReconciliationService needs ProjectionsService to recompute projections after reconciliation
+ * - ProjectionsService needs ReconciliationService to access normalized events
+ * The circular dependency is resolved at runtime via NestJS dependency injection.
  */
 @Injectable()
 export class ReconciliationService {
@@ -273,7 +280,7 @@ export class ReconciliationService {
       data: {
         id: uuidv4(),
         type: JobType.ENRICH_CRYPTO_VALUATION,
-        payload: JSON.stringify({ normalizedEventId }),
+        payload: safeJsonStringify({ normalizedEventId }),
         status: 'PENDING',
       },
     });

@@ -1,4 +1,5 @@
 import { EventKind } from '../../../common/constants/data.constants';
+import { CURRENCY_CONSTANTS } from '../../../common/constants/numeric.constants';
 import { insurerWebhookSchema } from '../schemas/insurer.schema';
 
 /**
@@ -26,13 +27,18 @@ export class InsurerAdapter {
     // In the future, we could add INSURANCE_CLAIM, INSURANCE_REFUND, etc.
     const kind = EventKind.INSURANCE_PREMIUM;
 
-    // Convert amount to minor units (assuming 2 decimal places for fiat)
+    // Convert amount to minor units
     const fiatAmountMinor = validated.amount
-      ? BigInt(Math.round(validated.amount * 100))
+      ? BigInt(
+          Math.round(
+            validated.amount * CURRENCY_CONSTANTS.MINOR_UNITS_MULTIPLIER,
+          ),
+        )
       : null;
 
-    // Default currency to EUR if missing
-    const fiatCurrency = validated.currency || 'EUR';
+    // Default currency if missing
+    const fiatCurrency =
+      validated.currency || CURRENCY_CONSTANTS.DEFAULT_CURRENCY;
 
     return {
       userId: validated.userId,

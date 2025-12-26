@@ -41,7 +41,9 @@ describe('ReconciliationService', () => {
     service = new ReconciliationService(prisma, projectionsService);
   });
 
-  const createEventData = (overrides?: Partial<NormalizedEventData>): NormalizedEventData => ({
+  const createEventData = (
+    overrides?: Partial<NormalizedEventData>,
+  ): NormalizedEventData => ({
     userId: 'user-001',
     provider: Provider.BANK,
     providerEventId: 'txn-123',
@@ -89,7 +91,8 @@ describe('ReconciliationService', () => {
       const eventData = createEventData();
 
       // Compute the hash that will be generated
-      const { computeHashMeaningful } = await import('./utils/reconciliation.utils');
+      const { computeHashMeaningful } =
+        await import('./utils/reconciliation.utils');
       const hash = computeHashMeaningful(eventData);
 
       const existingHead = {
@@ -173,9 +176,9 @@ describe('ReconciliationService', () => {
         provider: undefined as any,
       });
 
-      await expect(
-        service.reconcileNormalizedEvent(eventData),
-      ).rejects.toThrow('Provider is required');
+      await expect(service.reconcileNormalizedEvent(eventData)).rejects.toThrow(
+        'Provider is required',
+      );
     });
 
     it('should create new event when head exists but event is missing', async () => {
@@ -344,9 +347,9 @@ describe('ReconciliationService', () => {
         new Error('Database connection failed'),
       );
 
-      await expect(
-        service.reconcileNormalizedEvent(eventData),
-      ).rejects.toThrow('Database connection failed');
+      await expect(service.reconcileNormalizedEvent(eventData)).rejects.toThrow(
+        'Database connection failed',
+      );
     });
 
     it('should handle projection recomputation errors without failing', async () => {

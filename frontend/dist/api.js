@@ -1,3 +1,4 @@
+"use strict";
 /**
  * API service for Wealth Tracker
  */
@@ -46,5 +47,4 @@ class ApiService {
 // Create and expose global instance
 const apiService = new ApiService();
 window.apiService = apiService;
-export {};
 //# sourceMappingURL=api.js.map

@@ -27,13 +27,19 @@ import {
   InsurerWebhookPayloadDto,
 } from './dto/webhook-payload.dto';
 import { ValidationError } from '../../common/errors';
+import { PAYLOAD_CONSTANTS } from '../../common/constants/numeric.constants';
+import { safeJsonStringify } from '../../common/utils';
 
 /**
  * Controller for webhook ingestion endpoints
  * Accepts events from different providers and queues them for processing
  */
 @ApiTags('webhooks')
-@ApiExtraModels(BankWebhookPayloadDto, CryptoWebhookPayloadDto, InsurerWebhookPayloadDto)
+@ApiExtraModels(
+  BankWebhookPayloadDto,
+  CryptoWebhookPayloadDto,
+  InsurerWebhookPayloadDto,
+)
 @Controller('webhooks')
 export class WebhooksController {
   private readonly logger = new Logger(WebhooksController.name);
@@ -118,6 +124,14 @@ export class WebhooksController {
   })
   async handleWebhook(@Body() payload: unknown): Promise<WebhookResponseDto> {
     try {
+      // Validate payload size
+      const payloadSize = safeJsonStringify(payload).length;
+      if (payloadSize > PAYLOAD_CONSTANTS.MAX_PAYLOAD_SIZE) {
+        throw new ValidationError(
+          `Payload too large: ${payloadSize} bytes (max: ${PAYLOAD_CONSTANTS.MAX_PAYLOAD_SIZE} bytes)`,
+        );
+      }
+
       // Detect provider from payload
       const provider = this.webhookDetectorService.detectProvider(payload);
 

@@ -2,7 +2,20 @@
  * Main application logic
  */
 
-import type { TimelineEvent } from './types';
+// Type definitions (inlined for module: "None" compatibility)
+interface TimelineEvent {
+  eventId: string;
+  occurredAt: string;
+  provider: string;
+  accountId: string;
+  kind: string;
+  description: string | null;
+  fiatCurrency: string | null;
+  fiatAmountMinor: string | null;
+  assetSymbol: string | null;
+  assetAmount: string | null;
+  status: string;
+}
 
 let currentUserId = 'user-001';
 let timelineCursor: string | null = null;
@@ -14,7 +27,11 @@ async function loadData(): Promise<void> {
   currentUserId = userIdInput.value.trim() || 'user-001';
 
   if (!currentUserId) {
-    alert('Veuillez entrer un User ID');
+    window.showToast({
+      message: 'Veuillez entrer un User ID',
+      type: 'warning',
+      duration: 3000,
+    });
     return;
   }
 

@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Main application logic
  */
@@ -9,7 +10,11 @@ async function loadData() {
         return;
     currentUserId = userIdInput.value.trim() || 'user-001';
     if (!currentUserId) {
-        alert('Veuillez entrer un User ID');
+        window.showToast({
+            message: 'Veuillez entrer un User ID',
+            type: 'warning',
+            duration: 3000,
+        });
         return;
     }
     const apiService = window.apiService;
@@ -77,5 +82,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadData();
     setInterval(() => loadData(), 10000);
 });
-export {};
 //# sourceMappingURL=app.js.map

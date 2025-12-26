@@ -1,9 +1,11 @@
 import { NestFactory } from '@nestjs/core';
+import { Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { appConfig } from './config/app.config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
   const config = appConfig();
   const app = await NestFactory.create(AppModule);
 
@@ -29,11 +31,14 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   await app.listen(config.port);
-  console.log(`Application is running on: http://localhost:${config.port}`);
-  console.log(`Swagger documentation available at: http://localhost:${config.port}/api`);
+  logger.log(`Application is running on: http://localhost:${config.port}`);
+  logger.log(
+    `Swagger documentation available at: http://localhost:${config.port}/api`,
+  );
 }
 
 bootstrap().catch((error) => {
-  console.error('Error starting application:', error);
+  const logger = new Logger('Bootstrap');
+  logger.error('Error starting application', error);
   process.exit(1);
 });

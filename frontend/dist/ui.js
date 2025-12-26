@@ -1,3 +1,4 @@
+"use strict";
 /**
  * UI rendering functions
  */
@@ -137,5 +138,4 @@ window.showLoading = showLoading;
 window.showError = showError;
 window.formatAmount = formatAmount;
 window.formatDate = formatDate;
-export {};
 //# sourceMappingURL=ui.js.map

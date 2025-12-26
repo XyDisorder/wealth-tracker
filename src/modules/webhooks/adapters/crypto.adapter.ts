@@ -2,6 +2,7 @@ import {
   EventKind,
   ValuationStatus,
 } from '../../../common/constants/data.constants';
+import { CURRENCY_CONSTANTS } from '../../../common/constants/numeric.constants';
 import { cryptoWebhookSchema } from '../schemas/crypto.schema';
 
 /**
@@ -40,9 +41,16 @@ export class CryptoAdapter {
 
     if (validated.fiatValue?.amount) {
       fiatCurrency =
-        validated.fiatValue.currency || validated.currency || 'EUR';
-      // Convert to minor units (assuming 2 decimal places)
-      fiatAmountMinor = BigInt(Math.round(validated.fiatValue.amount * 100));
+        validated.fiatValue.currency ||
+        validated.currency ||
+        CURRENCY_CONSTANTS.DEFAULT_CURRENCY;
+      // Convert to minor units
+      fiatAmountMinor = BigInt(
+        Math.round(
+          validated.fiatValue.amount *
+            CURRENCY_CONSTANTS.MINOR_UNITS_MULTIPLIER,
+        ),
+      );
       valuationStatus = ValuationStatus.VALUED;
     } else if (validated.currency) {
       // Currency specified but no fiat value
